@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="d0afaef6-0ff1-4d40-9d36-e09e809005e0" >
+		<db:generic-connection url="${db.URL}" driverClassName="${db.className}" user="${secure::db.user}" password="${secure::db.password}" />
+	</db:config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="774d5e8e-4dc9-4021-8c9e-fea6fccba864" file="secureConfig.properties" key="1234" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="cd252aa3-6829-4936-ae2a-84c40ccd1516" file="config.yaml" />
+	<configuration doc:name="Configuration" doc:id="287d6058-b4a2-459a-89bb-a565552415b9" defaultErrorHandler-ref="globalError_Handler" />
+	<error-handler name="globalError_Handler" doc:id="57054efb-4d3a-4920-b476-70b33e3a05ff" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a358f78e-1da8-4781-bf10-3b37de1deab3" type="ANY">
+			<ee:transform doc:name="setting soap error in payload" doc:id="e5b0c28e-4460-40b4-afa9-e0b1900d5683" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+{
+    body: {
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+    } write "application/xml"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+</mule>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://bookmyshow.booking.com/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="TicketServiceService" targetNamespace="http://bookmyshow.booking.com/">
+   <wsdl:types>
+      <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified" targetNamespace="http://bookmyshow.booking.com/" version="1.0">
+         <xs:element name="InsertBookingRequest" type="tns:InsertBookingRequest" />
+         <xs:element name="InsertBookingResponse" type="tns:InsertBookingResponse" />
+ 
+         <xs:complexType name="Booking">
+            <xs:sequence>
+             <xs:element minOccurs="1" name = "NumberOfTickets" type = "xs:string"/>
+      <xs:element minOccurs="1" name = "TotalPrice" type = "xs:string"/>
+      <xs:element minOccurs="1" name = "BookingID" type = "xs:string"/>
+      <xs:element minOccurs="1" name = "BookingTiming" type = "xs:string"/>
+	  <xs:element minOccurs="1" name = "ShowTiming" type = "xs:string"/>
+	  <xs:element minOccurs="1" name = "CustomerName" type = "xs:string"/>
+	  <xs:element minOccurs="1" name = "TheaterName" type = "xs:string"/>
+	  <xs:element minOccurs="1" name = "ScreenID" type = "xs:string"/>
+            </xs:sequence>
+         </xs:complexType>
+         <xs:complexType name="InsertBookingRequest">
+            <xs:sequence>
+              
+			       <xs:element minOccurs="1" name = "MovieID" type = "xs:string"/>
+					<xs:element minOccurs="1" name = "TheaterID" type = "xs:string"/>
+						<xs:element minOccurs="1" name = "BookingTiming" type = "xs:string"/>
+						<xs:element minOccurs="1" name = "BookingPrice" type = "xs:string"/>
+		<xs:element minOccurs="1" name = "DiscountOffered" type = "xs:string"/>
+      <xs:element minOccurs="1" name = "ShowTiming" type = "xs:string"/>
+      <xs:element minOccurs="1" name = "NumberOfTickets" type = "xs:string"/>
+      <xs:element minOccurs="1" name = "CustomerName" type = "xs:string"/>
+      <xs:element minOccurs="0" name = "PlaceHolder1" type = "xs:string"/>
+      <xs:element minOccurs="0" name = "PlaceHolder2" type = "xs:string"/>
+            </xs:sequence>
+         </xs:complexType>
+         <xs:complexType name="InsertBookingResponse">
+            <xs:sequence>
+               <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:Booking" />
+            </xs:sequence>
+         </xs:complexType>
+      </xs:schema>
+   </wsdl:types>
+
+   <wsdl:message name="InsertBookingRequest">
+      <wsdl:part element="tns:InsertBookingRequest" name="parameters" />
+   </wsdl:message>
+   <wsdl:message name="InsertBookingResponse">
+      <wsdl:part element="tns:InsertBookingResponse" name="parameters" />
+   </wsdl:message>
+
+   <wsdl:portType name="BookingService">
+      <wsdl:operation name="InsertBooking">
+         <wsdl:input message="tns:InsertBookingRequest" name="InsertBookingRequest" />
+         <wsdl:output message="tns:InsertBookingResponse" name="InsertBookingResponse" />
+      </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="BookingServiceServiceSoapBinding" type="tns:BookingService">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+
+      <wsdl:operation name="InsertBooking">
+         <soap:operation soapAction="" style="document" />
+         <wsdl:input name="InsertBookingRequest">
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output name="InsertBookingResponse">
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+   <wsdl:service name="BookingService">
+      <wsdl:port binding="tns:BookingServiceServiceSoapBinding" name="BookingServicePort">
+         <soap:address location="http://localhost:8081/booking" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

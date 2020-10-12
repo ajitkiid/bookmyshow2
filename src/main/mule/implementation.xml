@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="insertToDB" doc:id="67c64384-d23e-4b6a-bb3a-0c5e8b2185d2" >
+		<ee:transform doc:name="transform xml payload to JSON" doc:id="682a7733-084f-4377-98d0-5fe1b4b64d71" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns book http://bookmyshow.booking.com/ 
+ns xsd http://www.w3.org/2001/XMLSchema
+---
+{
+	"movieID" : payload.body.book#InsertBookingRequest.MovieID,
+	"theaterID":payload.body.book#InsertBookingRequest.TheaterID,
+	"bookingTiming":payload.body.book#InsertBookingRequest.BookingTiming,
+	"bookingPrice":payload.body.book#InsertBookingRequest.BookingPrice,
+	"discountOffered":payload.body.book#InsertBookingRequest.DiscountOffered,
+	"showTiming":payload.body.book#InsertBookingRequest.ShowTiming,
+	"numberOfTickets":payload.body.book#InsertBookingRequest.NumberOfTickets as Number,
+	"customerName":payload.body.book#InsertBookingRequest.CustomerName,
+	"placeHolder1":payload.body.book#InsertBookingRequest.PlaceHolder1,
+	"placeHolder2":payload.body.book#InsertBookingRequest.PlaceHolder2
+	
+}
+
+
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[uuid()]" doc:name="Set Variable UUID" doc:id="73bbe297-bbdd-4576-8e31-fe14d75f4ec8" variableName="bookingID"/>
+		<db:insert doc:id="066a2096-fd8e-49f4-bc30-2e19ff26e171" doc:name="Insert to DB" config-ref="Database_Config" target="test">
+			<db:sql ><![CDATA[INSERT INTO bookmyshow.bookings(
+	"bookingID", "bookingPrice", "bookingTiming", "discountOffered", "movieID", "numberOfTickets", "showTiming", "theaterID", "customerID")
+	VALUES (:bookingID, :bookingPrice, now(), :discountOffered, :movieID, :numberOfTickets, to_timestamp(:showTiming,'YYYY-MM-dd hh24:mi:ss'), :theaterID, :customerID) ;
+	]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"movieID": payload.movieID,
+	"theaterID": payload.theaterID,
+	"bookingTiming": payload.bookingTiming,
+	"bookingPrice": payload.bookingPrice,
+	"discountOffered": payload.discountOffered,
+	"showTiming": payload.showTiming,
+	"numberOfTickets": payload.numberOfTickets,
+	"customerID": payload.customerName,
+	"bookingID": vars.bookingID
+	
+	
+	
+	
+}]]]></db:input-parameters>
+		</db:insert>
+
+		<db:select doc:name="Select theater name from theaterID" doc:id="f2e3efc6-5c2b-493e-81fe-2b7ab2e4926e" config-ref="Database_Config" target="theaterName">
+			<db:sql ><![CDATA[select "theaterName" from bookmyshow.theater where "theaterID"=:theaterID 
+	and "movieID"=:movieID
+	and "startTime"=to_timestamp(:showTiming,'YYYY-MM-dd hh24:mi:ss')]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"theaterID":payload.theaterID,
+	"movieID":payload.movieID,
+	"showTiming":payload.showTiming
+	
+	
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="a9a82113-8995-41ea-8cd9-eb666c2089a4" >
+			<when expression="#[isEmpty(vars.theaterName[0].theaterName)]">
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="a01904df-9925-49f4-b75f-42e06026117f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+ns ns1 http://bookmyshow.booking.com/
+---
+{
+    body: {
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "Invalid data"
+        }
+    } write "application/xml"
+}]]></ee:set-payload>
+						<ee:set-attributes ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	protocolHeaders :{
+		httpStatus: 400
+		
+	}
+}]]></ee:set-attributes>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="ebbf61bf-735b-4e1d-873f-0ed268fe0461">
+			<ee:message>
+						<ee:set-payload resource="eTicket.dwl" />
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="2a6483df-2f86-45ac-af61-19318945de04" message="#[payload]" />
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

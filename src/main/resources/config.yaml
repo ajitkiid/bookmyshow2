@@ -1,0 +1,6 @@
+db:
+  URL: "jdbc:postgresql://34.71.1.172/bookMyShow"
+  className: "org.postgresql.Driver"
+bookings:
+  responseDateFormat: "yyyy-MM-dd HH:mm:ss"
+  
