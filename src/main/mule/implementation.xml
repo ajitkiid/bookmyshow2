@@ -32,7 +32,7 @@ ns xsd http://www.w3.org/2001/XMLSchema
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<set-variable value="#[uuid()]" doc:name="Set Variable UUID" doc:id="73bbe297-bbdd-4576-8e31-fe14d75f4ec8" variableName="bookingID"/>
+		<set-variable value="#[uuid()]" doc:name="Set Variable UUID" doc:id="73bbe297-bbdd-4576-8e31-fe14d75f4ec8" variableName="bookingID" doc:description="test"/>
 		<db:insert doc:id="066a2096-fd8e-49f4-bc30-2e19ff26e171" doc:name="Insert to DB" config-ref="Database_Config" target="test">
 			<db:sql ><![CDATA[INSERT INTO bookmyshow.bookings(
 	"bookingID", "bookingPrice", "bookingTiming", "discountOffered", "movieID", "numberOfTickets", "showTiming", "theaterID", "customerID")
